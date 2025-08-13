@@ -20,11 +20,10 @@ chrome.storage.sync.get(null).then((data) => {
     console.log("done1");
 });
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    if (message.action === 'reloadPage') {
-        //reload the page to apply the new settings
-        window.location.reload();
-    }
+// Listen for changes in storage
+chrome.storage.onChanged.addListener((changes, area) => {
+   //reload the webpage
+   document.location.reload();
 });
 
 function fixRounds(elementList) {
