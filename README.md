@@ -1,7 +1,19 @@
 # Fuck Rounded Corners
 
+![Screenshot the Fuck Rounded Corners GitHub repo with sharp corners](/example.png)
+
+
 ## About:
-My friend hates rounded corners so this extension lets you change that
+Join the sharp side. Unrounded corners are sleek, efficient, and robotic in a world where websites are fake playful and kiddified.
+The screenshot above was taken with the mode as `round all corners the same amount` and with a Corner Radius of `0`.
+
+With this extention you can also create the opposite asthetic, by using the `round all corners using a ratio relitive to the shortest side` mode with a value of `0.5` and a max of `30`, searchbars, buttons, and the like will all end in circles.
+
+
+![Screenshot the Fuck Rounded Corners GitHub repo with very rounded corners](/example2.png)
+
+
+This extention was created for my friend who hates rounded corners.
 
 ## Installation: 
 1. download the repository through the [releases page](https://github.com/bluer222/fuckRoundedCorners/releases/latest)
