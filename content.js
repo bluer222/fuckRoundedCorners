@@ -1,3 +1,5 @@
+//elements that have already been edited
+var doneElements = [];
 
 //defaults
 var userSettings = {
@@ -27,46 +29,50 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 function fixRounds(elementList) {
     elementList.forEach((element) => {
-        var style = window.getComputedStyle(element);
-        var currentBorderRadius = style.getPropertyValue("border-radius");
-        //if the element has a border radius
-        if ((currentBorderRadius !== "" && currentBorderRadius !== "0px") || userSettings.editAll) {
+        if (!doneElements.includes(element)) {
+            doneElements.push(element);
+            var style = window.getComputedStyle(element);
+            var currentBorderRadius = style.getPropertyValue("border-radius");
+            //if the element has a border radius
+            if ((currentBorderRadius !== "" && currentBorderRadius !== "0px") || userSettings.editAll) {
 
-            var width = style.getPropertyValue("width");
-            var height = style.getPropertyValue("height");
-            //remove "px" from width and height
-            width = parseFloat(width);
-            height = parseFloat(height);
-            //find the shortest side
-            var shortestSide = Math.min(width, height);
-            if (userSettings.mode === "1") {
-                //round all corners the same amount
-                element.style.borderRadius = userSettings.roundAmount + "px";
-            } else if (userSettings.mode === "2") {
-                //round all corners using a ratio relative to the shortest side
-                if (userSettings.ratioAmount !== null) {
-                    var newRadius = shortestSide * userSettings.ratioAmount;
-                    if (newRadius < userSettings.minRounding) {
-                        newRadius = userSettings.minRounding;
-                    } else if (newRadius > userSettings.maxRounding && userSettings.maxRounding !== 0) {
-                        newRadius = userSettings.maxRounding;
+                var width = style.getPropertyValue("width");
+                var height = style.getPropertyValue("height");
+                //remove "px" from width and height
+                width = parseFloat(width);
+                height = parseFloat(height);
+                //find the shortest side
+                var shortestSide = Math.min(width, height);
+                if (userSettings.mode === "1") {
+                    //round all corners the same amount
+                    element.style.borderRadius = userSettings.roundAmount + "px";
+                } else if (userSettings.mode === "2") {
+                    //round all corners using a ratio relative to the shortest side
+                    if (userSettings.ratioAmount !== null) {
+                        var newRadius = shortestSide * userSettings.ratioAmount;
+                        if (newRadius < userSettings.minRounding) {
+                            newRadius = userSettings.minRounding;
+                        } else if (newRadius > userSettings.maxRounding && userSettings.maxRounding !== 0) {
+                            newRadius = userSettings.maxRounding;
+                        }
+                        element.style.borderRadius = newRadius + "px";
                     }
-                    element.style.borderRadius = newRadius + "px";
-                }
-            } else if (userSettings.mode === "3") {
-                //round all corners by applying a min and max to the existing rounding
-                if (currentBorderRadius < userSettings.minRounding) {
-                    element.style.borderRadius = userSettings.minRounding + "px";
-                } else if (currentBorderRadius > userSettings.maxRounding && userSettings.maxRounding !== 0) {
-                    element.style.borderRadius = userSettings.maxRounding + "px";
+                } else if (userSettings.mode === "3") {
+                    //round all corners by applying a min and max to the existing rounding
+                    if (currentBorderRadius < userSettings.minRounding) {
+                        element.style.borderRadius = userSettings.minRounding + "px";
+                    } else if (currentBorderRadius > userSettings.maxRounding && userSettings.maxRounding !== 0) {
+                        element.style.borderRadius = userSettings.maxRounding + "px";
+                    }
                 }
             }
         }
     });
+
 }
 
 const callback = (mutationsList, observer) => {
-        fixRounds(document.querySelectorAll('*'));
+    fixRounds(document.querySelectorAll('*'));
 };
 // Create an observer and when the body changes
 var observer = new MutationObserver(callback);
