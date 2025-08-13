@@ -1,0 +1,19 @@
+{
+    "manifest_version": 3,
+    "name": "Fuck Rounded Corners",
+    "version": "2",
+    "description": "Changes the roundness of all corners based on user preferance",
+     "action": {
+      "default_popup": "popup.html"
+    },
+    "permissions": ["scripting", "storage"],
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],
+        "js": ["content.js"]
+      }
+    ],
+    "icons": {
+      "128": "icon.png"
+    }
+  }

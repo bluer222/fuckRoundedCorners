@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Fuck Rounded Corners</title>
+</head>
+<body>
+    <p>Fuck Rounded Corners</p>
+    <p>How rounded should corners be:</p>
+    <select name="mode" id="mode">
+  <option value="1">round all corners the same ammount</option>
+  <option value="2">round all corners using a ratio relitive to the shortest side</option>
+  <option value="3">round all corners by applying a min and max to the existing rounding</option>
+</select>
+<br>
+<div id="inputs">
+<input type="number" id="roundAmmount" placeholder="Enter round amount"></input>
+
+</div>
+<input type="checkbox" id="editAll" name="editAll" value="editAll">
+  <label for="editAll">Edit elements that are not already rounded</label><br>
+  <br>  <br>
+
+  <button id="save">save</button>
+  <script src="popup.js"></script>
+</body>
+</html>
