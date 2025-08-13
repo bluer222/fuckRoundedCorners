@@ -7,7 +7,11 @@ var userSettings = {
     maxRounding: 0,
     editAll: false
 };
-chrome.storage.sync.get(null).then((data) => {
+
+// Cross-browser storage API
+const storage = (typeof browser !== "undefined" && browser.storage) ? browser.storage : chrome.storage;
+
+storage.sync.get(null).then((data) => {
     if(data != null){
       console.log("settings loaded");
     userSettings = data;
@@ -35,8 +39,8 @@ document.getElementById('save').addEventListener('click', () => {
     userSettings.minRounding = parseFloat(document.getElementById('minRounding').value);
     userSettings.maxRounding = parseFloat(document.getElementById('maxRounding').value);
   }
-  //save the settings to chrome storage
-  chrome.storage.sync.set(userSettings).then(() => {
+  //save the settings to storage
+  storage.sync.set(userSettings).then(() => {
     console.log(userSettings);
     console.log('Settings saved');
   });

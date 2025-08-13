@@ -1,4 +1,3 @@
-
 //defaults
 var userSettings = {
     mode: "1",
@@ -8,7 +7,12 @@ var userSettings = {
     maxRounding: 0,
     editAll: false
 };
-chrome.storage.sync.get(null).then((data) => {
+
+// Cross-browser storage API
+const storage = (typeof browser !== "undefined" && browser.storage) ? browser.storage : chrome.storage;
+const runtime = (typeof browser !== "undefined" && browser.runtime) ? browser.runtime : chrome.runtime;
+
+storage.sync.get(null).then((data) => {
     if (data != null) {
         userSettings = data;
     }
@@ -18,7 +22,7 @@ chrome.storage.sync.get(null).then((data) => {
     console.log("done1");
 });
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'reloadPage') {
         //reload the page to apply the new settings
         window.location.reload();

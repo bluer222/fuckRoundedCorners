@@ -6,7 +6,7 @@
      "action": {
       "default_popup": "popup.html"
     },
-    "permissions": ["scripting", "storage"],
+    "permissions": ["storage"],
     "content_scripts": [
       {
         "matches": ["<all_urls>"],
@@ -15,5 +15,11 @@
     ],
     "icons": {
       "128": "icon.png"
+    },
+    "browser_specific_settings": {
+      "gecko": {
+        "id": "fuckroundedcorners@example.com",
+        "strict_min_version": "109.0"
+      }
     }
   }
