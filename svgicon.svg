@@ -1,0 +1,34 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Path for custom corners - top-left: 2px, top-right: 20px, bottom-right: 8px, bottom-left: 15px -->
+  <path d="M 3 0
+           L 108 0
+           Q 128 0 128 20
+           L 128 88
+           Q 128 128 88 128
+           L 68 128
+           Q 0 128 0 60
+           L 0 3
+           Q 0 0 3 0 Z"
+        fill="#4285f4"
+        stroke="#1a73e8"
+        stroke-width="2"/>
+  <!-- Text -->
+  <text x="64" y="40"
+        font-family="Arial, sans-serif"
+        font-size="40"
+        font-weight="bold"
+        fill="white"
+        text-anchor="middle">Fuck</text>
+  <text x="64" y="70"
+        font-family="Arial, sans-serif"
+        font-size="30"
+        font-weight="bold"
+        fill="white"
+        text-anchor="middle">Rounded</text>
+  <text x="64" y="100"
+        font-family="Arial, sans-serif"
+        font-size="30"
+        font-weight="bold"
+        fill="white"
+        text-anchor="middle">Corners</text>
+</svg>
