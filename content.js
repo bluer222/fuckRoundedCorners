@@ -16,6 +16,9 @@ const runtime = (typeof browser !== "undefined" && browser.runtime) ? browser.ru
 // Caches / trackers
 const watchedElements = new WeakSet();   // elements we attached observers to (attr + resize)
 
+//do we need to reload the page for new settings?
+let pendingReload = false;
+
 // Load settings & initial pass
 storage.sync.get(null).then((data) => {
     if (data != null) userSettings = data;
@@ -26,9 +29,16 @@ storage.sync.get(null).then((data) => {
 // Reload on settings change
 (ifStorageOnChanged => {
     if (ifStorageOnChanged) {
-        ifStorageOnChanged.addListener(() => document.location.reload());
+        ifStorageOnChanged.addListener(() => pendingReload = true);
     }
 })((storage && storage.onChanged) ? storage.onChanged : (chrome.storage && chrome.storage.onChanged));
+
+//just got focused, check if we need to reload
+window.addEventListener('focus', () => {
+    if (pendingReload) {
+        document.location.reload();
+    }
+});
 
 // Exclusion helpers
 function shouldExclude(element) {
