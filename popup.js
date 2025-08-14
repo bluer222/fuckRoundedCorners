@@ -81,8 +81,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     //save the settings to storage
     storage.sync.set(userSettings).then(() => {
-      console.log(userSettings);
-      console.log('Settings saved');
+      //notify user of success
+      document.getElementById('saveStatus').style.display = 'inline';
+        setTimeout(() => {
+          document.getElementById('saveStatus').style.display = 'none';
+        }, 1200);
     });
   });
 

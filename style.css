@@ -227,3 +227,10 @@ a {
   text-decoration: none;
   font-size:1.2em;
 }
+
+#saveStatus {
+  margin-top: 10px;
+  font-size: 1.1em;
+  color: #2ecc71;
+  display: none;
+}
