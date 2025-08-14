@@ -11,7 +11,7 @@ body {
   padding: 18px 16px 16px 16px;
   background: #23272f;
   border-radius: 0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 }
 
 h2 {
@@ -49,8 +49,8 @@ h2 {
   color: #fff;
 }
 
-.inputs input[type="number"] {
-  width: 100%;
+.inputs input[type="number"],
+input[type="text"] {
   margin-bottom: 10px;
   padding: 6px 8px;
   border-radius: 0;
@@ -61,7 +61,12 @@ h2 {
   color: #fff;
 }
 
-.inputs input[type="number"]::placeholder {
+.inputs input[type="number"]{
+  width: 100%;
+}
+
+.inputs input::placeholder,
+input[type="text"] {
   color: #888;
 }
 
@@ -131,7 +136,7 @@ h2 {
   border: 1px solid #444;
   border-top: none;
   border-radius: 0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
   z-index: 10;
   max-height: 150px;
   overflow-y: auto;
@@ -158,4 +163,55 @@ h2 {
 /* Hide the original select if present */
 select.select {
   display: none !important;
+}
+
+.options-section {
+  margin-bottom: 18px;
+}
+
+.options-section label {
+  color: #e0e0e0;
+}
+
+.exclusion-list {
+  margin: 8px 0 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.exclusion-list li {
+  margin-bottom: 4px;
+}
+
+.remove-btn {
+  margin-left: 8px;
+  background: #c0392b;
+  color: #fff;
+  border: none;
+  padding: 2px 8px;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+
+.remove-btn:hover {
+  background: #a93226;
+}
+
+.add-btn {
+  margin-left: 8px;
+  background: #444851;
+  color: #fff;
+  border: none;
+  padding: 2px 8px;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+
+.add-btn:hover {
+  background: #2d313a;
+}
+
+.options-container {
+  max-width: 400px;
+  margin: 0 auto;
 }
