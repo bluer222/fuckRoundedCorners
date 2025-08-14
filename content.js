@@ -1,65 +1,100 @@
-//defaults
 var userSettings = {
     mode: "1",
     roundAmount: 0,
     ratioAmount: 0,
     minRounding: 0,
     maxRounding: 0,
-    editAll: false
+    editAll: false,
+    excludeClasses: [],
+    excludeIds: []
 };
-chrome.storage.sync.get(null).then((data) => {
-    if (data != null) {
-        userSettings = data;
-    }
-    console.log("load1");
-    // Call the function on all elements initially
+
+// Cross-browser storage API
+const storage = (typeof browser !== "undefined" && browser.storage) ? browser.storage : chrome.storage;
+const runtime = (typeof browser !== "undefined" && browser.runtime) ? browser.runtime : chrome.runtime;
+
+// Caches / trackers
+const watchedElements = new WeakSet();   // elements we attached observers to (attr + resize)
+
+// Load settings & initial pass
+storage.sync.get(null).then((data) => {
+    if (data != null) userSettings = data;
+    // Initial sweep
     fixRounds(document.querySelectorAll('*'));
-    console.log("done1");
 });
 
+// Reload on settings change
+(ifStorageOnChanged => {
+    if (ifStorageOnChanged) {
+        ifStorageOnChanged.addListener(() => document.location.reload());
+    }
+})((storage && storage.onChanged) ? storage.onChanged : (chrome.storage && chrome.storage.onChanged));
 
-// Listen for changes in storage
-chrome.storage.onChanged.addListener((changes, area) => {
-    //reload the webpage
-    document.location.reload();
-});
+// Exclusion helpers
+function shouldExclude(element) {
+    if (userSettings.excludeClasses && Array.isArray(userSettings.excludeClasses)) {
+        for (const cls of userSettings.excludeClasses) {
+            if (element.classList && element.classList.contains(cls)) return true;
+        }
+    }
+    if (userSettings.excludeIds && Array.isArray(userSettings.excludeIds)) {
+        if (element.id && userSettings.excludeIds.includes(element.id)) return true;
+    }
+    return false;
+}
+
+// Core rounding
+function computeNewRadius(element, style, currentBorderRadius) {
+    let newRadius = null;
+
+    // Width/height: prefer fast geometry; fall back to computed values
+    const rect = element.getBoundingClientRect();
+    let width = rect.width || parseFloat(style.getPropertyValue("width")) || 0;
+    let height = rect.height || parseFloat(style.getPropertyValue("height")) || 0;
+    const shortestSide = Math.min(width, height);
+
+    if (userSettings.mode === "1") {
+        newRadius = userSettings.roundAmount;
+    } else if (userSettings.mode === "2") {
+        // Ratio mode: if we don't have dimensions yet, wait for ResizeObserver
+        if (userSettings.ratioAmount !== null) {
+            let newRadius = shortestSide * userSettings.ratioAmount;
+            if (newRadius < userSettings.minRounding) newRadius = userSettings.minRounding;
+            else if (userSettings.maxRounding !== 0 && newRadius > userSettings.maxRounding) newRadius = userSettings.maxRounding;
+        }
+    } else if (userSettings.mode === "3") {
+        const numericRadius = parseFloat(currentBorderRadius) || 0;
+        if (numericRadius < userSettings.minRounding) {
+            newRadius = userSettings.minRounding;
+        } else if (userSettings.maxRounding !== 0 && numericRadius > userSettings.maxRounding) {
+            newRadius = userSettings.maxRounding;
+        }
+    }
+
+    return newRadius + "px";
+}
 
 function fixRounds(elementList) {
     elementList.forEach((element) => {
-        var style = window.getComputedStyle(element);
-        var currentBorderRadius = style.getPropertyValue("border-radius");
-        //if the element has a border radius
-        if ((currentBorderRadius !== "" && currentBorderRadius !== "0px") || userSettings.editAll) {
+        if (!element || element.nodeType !== 1) return;
+        if (shouldExclude(element)) return;
 
-            var width = style.getPropertyValue("width");
-            var height = style.getPropertyValue("height");
-            //remove "px" from width and height
-            width = parseFloat(width);
-            height = parseFloat(height);
-            //find the shortest side
-            var shortestSide = Math.min(width, height);
-            if (userSettings.mode === "1") {
-                //round all corners the same amount
-                element.style.borderRadius = userSettings.roundAmount + "px";
-            } else if (userSettings.mode === "2") {
-                //round all corners using a ratio relative to the shortest side
-                if (userSettings.ratioAmount !== null) {
-                    var newRadius = shortestSide * userSettings.ratioAmount;
-                    if (newRadius < userSettings.minRounding) {
-                        newRadius = userSettings.minRounding;
-                    } else if (newRadius > userSettings.maxRounding && userSettings.maxRounding !== 0) {
-                        newRadius = userSettings.maxRounding;
-                    }
-                    element.style.borderRadius = newRadius + "px";
-                }
-            } else if (userSettings.mode === "3") {
-                //round all corners by applying a min and max to the existing rounding
-                if (currentBorderRadius < userSettings.minRounding) {
-                    element.style.borderRadius = userSettings.minRounding + "px";
-                } else if (currentBorderRadius > userSettings.maxRounding && userSettings.maxRounding !== 0) {
-                    element.style.borderRadius = userSettings.maxRounding + "px";
-                }
-            }
+        const style = window.getComputedStyle(element);
+        const currentBorderRadius = style.getPropertyValue("border-radius");
+
+        // Candidate if it has rounding or we're set to edit all
+        // Always Skip if not visible
+        const isCandidate = ((currentBorderRadius && currentBorderRadius !== "0px") || userSettings.editAll) && (style.getPropertyValue("display") !== "none" && style.getPropertyValue("visibility") !== "hidden" && style.getPropertyValue("opacity") !== "0");
+        if (!isCandidate) return;
+
+        // Compute desired radius
+        const desired = computeNewRadius(element, style, currentBorderRadius);
+
+        // If ratio mode and we don't have size yet, skip for now — resize observer will retry
+        if (!desired) return;
+
+        if (currentBorderRadius !== desired) {
+            element.style.borderRadius = desired;
         }
 
         //check for shadow roots
@@ -72,42 +107,43 @@ function fixRounds(elementList) {
             fixRounds(shadowElements);
         }
     });
-
 }
 
 function observeDocumentChanges(docToObserve) {
-// Create an observer and when the body changes
-const observer = new MutationObserver((mutations) => {
-    const newElements = [];
+    if (watchedElements.has(docToObserve)) return;
+    watchedElements.add(docToObserve);
+    // Create an observer and when the body changes
+    const observer = new MutationObserver((mutations) => {
+        const newElements = [];
 
-    mutations.forEach((mutation) => {
-        // Check for added nodes
-        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-            mutation.addedNodes.forEach((node) => {
-                // Only process element nodes (nodeType 1), skip text nodes, comments, etc.
-                if (node.nodeType === 1) {
-                    newElements.push(node);
+        mutations.forEach((mutation) => {
+            // Check for added nodes
+            if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                mutation.addedNodes.forEach((node) => {
+                    // Only process element nodes (nodeType 1), skip text nodes, comments, etc.
+                    if (node.nodeType === 1) {
+                        newElements.push(node);
 
-                    // Optional: Also include all descendant elements
-                    const descendants = node.querySelectorAll('*');
-                    newElements.push(...descendants);
-                }
-            });
+                        // Optional: Also include all descendant elements
+                        const descendants = node.querySelectorAll('*');
+                        newElements.push(...descendants);
+                    }
+                });
+            }
+        });
+
+        // Call your function with the array of new elements (if any were found)
+        if (newElements.length > 0) {
+            fixRounds(newElements);
         }
     });
 
-    // Call your function with the array of new elements (if any were found)
-    if (newElements.length > 0) {
-        fixRounds(newElements);
-    }
-});
-
-// Start observing the document (or any specific element)
-observer.observe(docToObserve, {
-    childList: true,        // Watch for added/removed children
-    subtree: true,          // Watch all descendants, not just direct children
-    attributes: false,      // Don't watch attribute changes
-    characterData: false    // Don't watch text content changes
-});
+    // Start observing the document (or any specific element)
+    observer.observe(docToObserve, {
+        childList: true,        // Watch for added/removed children
+        subtree: true,          // Watch all descendants, not just direct children
+        attributes: false,      // Don't watch attribute changes
+        characterData: false    // Don't watch text content changes
+    });
 }
 observeDocumentChanges(document.body);

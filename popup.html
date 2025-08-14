@@ -3,28 +3,31 @@
 
 <head>
   <title>Fuck Rounded Corners</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-  <h1>Fuck Rounded Corners</h1>
-  <label for="mode">Round all corners: </label>
-  <select name="mode" id="mode">
-    <option value="1">the same amount</option>
-    <option value="2">using a ratio relative to the shortest side</option>
-    <option value="3">by applying a min and max to the existing rounding</option>
-  </select>
-  <br>
-  <br>
-  <div id="inputs">
-    <input type="number" id="roundamount" placeholder="Enter round amount"></input>
-
+  <div class="container">
+    <h2>Fuck Rounded Corners</h2>
+    <label for="mode" class="label">Round all corners:</label>
+    <div class="custom-dropdown" id="customDropdown">
+      <div class="custom-dropdown-selected" id="dropdownSelected">the same amount</div>
+      <div class="custom-dropdown-list" id="dropdownList">
+        <div class="custom-dropdown-option" data-value="1">the same amount</div>
+        <div class="custom-dropdown-option" data-value="2">using a ratio relative to the shortest side</div>
+        <div class="custom-dropdown-option" data-value="3">by applying a min and max to the existing rounding</div>
+      </div>
+    </div>
+    <input type="hidden" id="mode" value="1">
+    <div id="inputs" class="inputs">
+      <input type="number" id="roundAmmount" placeholder="Enter round amount">
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="editAll" name="editAll" value="editAll">
+      <label for="editAll">Edit elements that are not already rounded</label>
+    </div>
+    <button id="save" class="save-btn">Save</button>
   </div>
-  <input type="checkbox" id="editAll" name="editAll" value="editAll">
-  <label for="editAll">Edit elements that are not already rounded</label>
-  <br>
-  <br>
-
-  <button id="save">save</button>
   <script src="popup.js"></script>
 </body>
 
