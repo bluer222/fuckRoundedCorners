@@ -63,10 +63,15 @@ function computeNewRadius(element, style, currentBorderRadius) {
     let height = rect.height || parseFloat(style.getPropertyValue("height")) || 0;
     const shortestSide = Math.min(width, height);
 
+    //if the element is invisible lets just observe it
+    if (shortestSide === 0 || style.getPropertyValue("display") === "none" || style.getPropertyValue("visibility") === "hidden" || style.getPropertyValue("opacity") === "0") {
+        observeElementChanges(element);
+        return;
+    }
+
     if (userSettings.mode === "1") {
         newRadius = userSettings.roundAmount;
     } else if (userSettings.mode === "2") {
-        // Ratio mode: if we don't have dimensions yet, wait for ResizeObserver
         if (userSettings.ratioAmount !== null) {
             let newRadius = shortestSide * userSettings.ratioAmount;
             if (newRadius < userSettings.minRounding) newRadius = userSettings.minRounding;
@@ -105,8 +110,7 @@ function fixRounds(elementList) {
         const currentBorderRadius = style.getPropertyValue("border-radius");
 
         // Candidate if it has rounding or we're set to edit all
-        // Always Skip if not visible
-        const isCandidate = ((currentBorderRadius && currentBorderRadius !== "0px") || userSettings.editAll) && (style.getPropertyValue("display") !== "none" && style.getPropertyValue("visibility") !== "hidden" && style.getPropertyValue("opacity") !== "0");
+        const isCandidate = ((currentBorderRadius && currentBorderRadius !== "0px") || userSettings.editAll);
         if (!isCandidate) return;
 
         // Compute desired radius
@@ -120,38 +124,56 @@ function fixRounds(elementList) {
             element.style.setProperty('border-radius', desired, 'important');
         }
 
-        
+
     });
+}
+// Create an observer and when the body changes
+const observer = new MutationObserver((mutations) => {
+    const newElements = [];
+
+    mutations.forEach((mutation) => {
+        // Check for added nodes
+        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+            mutation.addedNodes.forEach((node) => {
+                // Only process element nodes (nodeType 1), skip text nodes, comments, etc.
+                if (node.nodeType === 1) {
+                    newElements.push(node);
+
+                    // Optional: Also include all descendant elements
+                    const descendants = node.querySelectorAll('*');
+                    newElements.push(...descendants);
+                }
+            });
+        }
+    });
+
+    // Call your function with the array of new elements (if any were found)
+    if (newElements.length > 0) {
+        fixRounds(newElements);
+    }
+});
+
+// Per-element observers (attribute + resize) — attach ONLY to candidates
+const attrObserver = new MutationObserver((records) => {
+    const changed = new Set();
+    for (const r of records) {
+        if (r.type === "attributes" && r.target && r.target.nodeType === 1) {
+            changed.add(r.target);
+        }
+    }
+    if (changed.size) fixRounds(changed);
+});
+
+function observeElementChanges(element) {
+    if (watchedElements.has(element)) {
+        return;
+    }
+    attrObserver.observe(element, { attributes: true, attributeFilter: ['style', 'class', 'src'] });
 }
 
 function observeDocumentChanges(docToObserve) {
     if (watchedElements.has(docToObserve)) return;
     watchedElements.add(docToObserve);
-    // Create an observer and when the body changes
-    const observer = new MutationObserver((mutations) => {
-        const newElements = [];
-
-        mutations.forEach((mutation) => {
-            // Check for added nodes
-            if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-                mutation.addedNodes.forEach((node) => {
-                    // Only process element nodes (nodeType 1), skip text nodes, comments, etc.
-                    if (node.nodeType === 1) {
-                        newElements.push(node);
-
-                        // Optional: Also include all descendant elements
-                        const descendants = node.querySelectorAll('*');
-                        newElements.push(...descendants);
-                    }
-                });
-            }
-        });
-
-        // Call your function with the array of new elements (if any were found)
-        if (newElements.length > 0) {
-            fixRounds(newElements);
-        }
-    });
 
     // Start observing the document (or any specific element)
     observer.observe(docToObserve, {
@@ -161,4 +183,5 @@ function observeDocumentChanges(docToObserve) {
         characterData: false    // Don't watch text content changes
     });
 }
+
 observeDocumentChanges(document.body);
