@@ -73,7 +73,7 @@ function computeNewRadius(element, style, currentBorderRadius) {
         newRadius = userSettings.roundAmount;
     } else if (userSettings.mode === "2") {
         if (userSettings.ratioAmount !== null) {
-            let newRadius = shortestSide * userSettings.ratioAmount;
+            newRadius = shortestSide * userSettings.ratioAmount;
             if (newRadius < userSettings.minRounding) newRadius = userSettings.minRounding;
             else if (userSettings.maxRounding !== 0 && newRadius > userSettings.maxRounding) newRadius = userSettings.maxRounding;
         }
