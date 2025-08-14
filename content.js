@@ -76,8 +76,20 @@ function computeNewRadius(element, style, currentBorderRadius) {
 
 function fixRounds(elementList) {
     elementList.forEach((element) => {
-        if (!element || element.nodeType !== 1) return;
         if (shouldExclude(element)) return;
+
+        //check for shadow roots first because an element that does not meet requrements
+        //can still have a shadow root that does
+        if (element.shadowRoot) {
+            //create an observer for the shadow root
+            observeDocumentChanges(element.shadowRoot);
+            //if the element has a shadow root, then get all elements in the shadow root
+            const shadowElements = element.shadowRoot.querySelectorAll('*');
+            //call the function on all elements in the shadow root
+            fixRounds(shadowElements);
+        }
+
+        if (!element || element.nodeType !== 1) return;
 
         const style = window.getComputedStyle(element);
         const currentBorderRadius = style.getPropertyValue("border-radius");
@@ -97,15 +109,7 @@ function fixRounds(elementList) {
             element.style.borderRadius = desired;
         }
 
-        //check for shadow roots
-        if (element.shadowRoot) {
-            //create an observer for the shadow root
-            observeDocumentChanges(element.shadowRoot);
-            //if the element has a shadow root, then get all elements in the shadow root
-            const shadowElements = element.shadowRoot.querySelectorAll('*');
-            //call the function on all elements in the shadow root
-            fixRounds(shadowElements);
-        }
+        
     });
 }
 
