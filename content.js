@@ -17,6 +17,7 @@ chrome.storage.sync.get(null).then((data) => {
     console.log("done1");
 });
 
+
 // Listen for changes in storage
 chrome.storage.onChanged.addListener((changes, area) => {
     //reload the webpage
@@ -60,10 +61,21 @@ function fixRounds(elementList) {
                 }
             }
         }
+
+        //check for shadow roots
+        if (element.shadowRoot) {
+            //create an observer for the shadow root
+            observeDocumentChanges(element.shadowRoot);
+            //if the element has a shadow root, then get all elements in the shadow root
+            const shadowElements = element.shadowRoot.querySelectorAll('*');
+            //call the function on all elements in the shadow root
+            fixRounds(shadowElements);
+        }
     });
 
 }
 
+function observeDocumentChanges(docToObserve) {
 // Create an observer and when the body changes
 const observer = new MutationObserver((mutations) => {
     const newElements = [];
@@ -91,9 +103,11 @@ const observer = new MutationObserver((mutations) => {
 });
 
 // Start observing the document (or any specific element)
-observer.observe(document.body, {
+observer.observe(docToObserve, {
     childList: true,        // Watch for added/removed children
     subtree: true,          // Watch all descendants, not just direct children
     attributes: false,      // Don't watch attribute changes
     characterData: false    // Don't watch text content changes
 });
+}
+observeDocumentChanges(document.body);
