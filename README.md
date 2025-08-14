@@ -17,7 +17,7 @@ This extention was created for my friend who hates rounded corners.
 
 ## Installation: 
 ### On chrome:
-1. Download the repository [here](https://github.com/MastrCheef99/fuckRoundedCornersFirefox/archive/refs/heads/main.zip)
+1. Download the latest release [here](https://github.com/bluer222/fuckRoundedCorners/releases)
 2. Extract the zip
 3. Open chrome://extensions and enable developer mode at the top right
 4. Load the folder using the "load unpacked" button at the top left
@@ -25,7 +25,7 @@ This extention was created for my friend who hates rounded corners.
 ### On firefox
 Addons store and signed xpi coming soon
 For now
-1. Download the repository [here](https://github.com/MastrCheef99/fuckRoundedCornersFirefox/archive/refs/heads/main.zip)
+1. Download the latest release [here](https://github.com/bluer222/fuckRoundedCorners/releases)
 2. Extract the zip
 3. Go to about:debugging
 4. Go to this firefox
