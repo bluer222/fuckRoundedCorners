@@ -106,7 +106,8 @@ function fixRounds(elementList) {
         if (!desired) return;
 
         if (currentBorderRadius !== desired) {
-            element.style.borderRadius = desired;
+            //do it this way to overrule any !important styles
+            element.style.setProperty('border-radius', desired, 'important');
         }
 
         
