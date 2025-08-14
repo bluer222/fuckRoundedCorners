@@ -5,7 +5,9 @@ var userSettings = {
     ratioAmount: 0,
     minRounding: 0,
     maxRounding: 0,
-    editAll: false
+    editAll: false,
+    excludeClasses: [],
+    excludeIds: []
 };
 
 // Cross-browser storage API
@@ -22,6 +24,17 @@ storage.sync.get(null).then((data) => {
     console.log("done1");
 });
 
+// Listen for changes in storage (cross-browser)
+if (storage.onChanged) {
+    storage.onChanged.addListener(() => {
+        document.location.reload();
+    });
+} else if (chrome.storage && chrome.storage.onChanged) {
+    chrome.storage.onChanged.addListener(() => {
+        document.location.reload();
+    });
+}
+
 runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'reloadPage') {
         //reload the page to apply the new settings
@@ -31,6 +44,21 @@ runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 function fixRounds(elementList) {
     elementList.forEach((element) => {
+        // Exclusion logic
+        if (
+            userSettings.excludeClasses &&
+            Array.isArray(userSettings.excludeClasses) &&
+            userSettings.excludeClasses.some(cls => element.classList.contains(cls))
+        ) {
+            return;
+        }
+        if (
+            userSettings.excludeIds &&
+            Array.isArray(userSettings.excludeIds) &&
+            userSettings.excludeIds.includes(element.id)
+        ) {
+            return;
+        }
         var style = window.getComputedStyle(element);
         var currentBorderRadius = style.getPropertyValue("border-radius");
         //if the element has a border radius
@@ -66,16 +94,38 @@ function fixRounds(elementList) {
                 }
             }
         }
+        // Shadow DOM support
+        if (element.shadowRoot) {
+            observeDocumentChanges(element.shadowRoot);
+            const shadowElements = element.shadowRoot.querySelectorAll('*');
+            fixRounds(shadowElements);
+        }
     });
 }
 
-const callback = (mutationsList, observer) => {
-        fixRounds(document.querySelectorAll('*'));
-};
-// Create an observer and when the body changes
-var observer = new MutationObserver(callback);
-observer.observe(document.body, {
-    childList: true,
-    subtree: true
-
-});
+function observeDocumentChanges(docToObserve) {
+    const observer = new MutationObserver((mutations) => {
+        const newElements = [];
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                mutation.addedNodes.forEach((node) => {
+                    if (node.nodeType === 1) {
+                        newElements.push(node);
+                        const descendants = node.querySelectorAll('*');
+                        newElements.push(...descendants);
+                    }
+                });
+            }
+        });
+        if (newElements.length > 0) {
+            fixRounds(newElements);
+        }
+    });
+    observer.observe(docToObserve, {
+        childList: true,
+        subtree: true,
+        attributes: false,
+        characterData: false
+    });
+}
+observeDocumentChanges(document.body);

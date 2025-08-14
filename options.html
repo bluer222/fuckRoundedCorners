@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Fuck Rounded Corners - Settings</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .options-section { margin-bottom: 18px; }
+    .options-section label { color: #e0e0e0; }
+    .exclusion-list { margin: 8px 0 0 0; padding: 0; list-style: none; }
+    .exclusion-list li { margin-bottom: 4px; }
+    .remove-btn {
+      margin-left: 8px;
+      background: #c0392b;
+      color: #fff;
+      border: none;
+      padding: 2px 8px;
+      cursor: pointer;
+      font-size: 0.9em;
+    }
+    .remove-btn:hover { background: #a93226; }
+    .add-btn {
+      margin-left: 8px;
+      background: #444851;
+      color: #fff;
+      border: none;
+      padding: 2px 8px;
+      cursor: pointer;
+      font-size: 0.9em;
+    }
+    .add-btn:hover { background: #2d313a; }
+    .options-container { max-width: 400px; margin: 0 auto; }
+  </style>
+</head>
+<body>
+  <div class="container options-container">
+    <h2>Settings</h2>
+    <div class="options-section">
+      <label for="excludeClasses">Exclude elements with these classes:</label>
+      <div>
+        <input type="text" id="excludeClassInput" placeholder="Class name">
+        <button class="add-btn" id="addClassBtn">Add</button>
+      </div>
+      <ul id="excludeClassesList" class="exclusion-list"></ul>
+    </div>
+    <div class="options-section">
+      <label for="excludeIds">Exclude elements with these IDs:</label>
+      <div>
+        <input type="text" id="excludeIdInput" placeholder="ID">
+        <button class="add-btn" id="addIdBtn">Add</button>
+      </div>
+      <ul id="excludeIdsList" class="exclusion-list"></ul>
+    </div>
+    <button id="saveOptions" class="save-btn">Save</button>
+    <span id="saveStatus" style="margin-left:10px;color:#7fff7f;display:none;">Saved!</span>
+  </div>
+  <script src="options.js"></script>
+</body>
+</html>
