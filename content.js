@@ -63,9 +63,9 @@ function computeNewRadius(element, style, currentBorderRadius) {
     let height = rect.height || parseFloat(style.getPropertyValue("height")) || 0;
     const shortestSide = Math.min(width, height);
 
-    //if the element is invisible lets just observe it
-    if (shortestSide === 0 || style.getPropertyValue("display") === "none" || style.getPropertyValue("visibility") === "hidden" || style.getPropertyValue("opacity") === "0") {
-        observeElementChanges(element);
+    //if the element is not rendered lets just observe it
+    if (shortestSide === 0 || style.getPropertyValue("display") === "none") {
+        observeElementVisibility(element);
         return;
     }
 
@@ -153,24 +153,22 @@ const observer = new MutationObserver((mutations) => {
     }
 });
 
-// Per-element observers (attribute + resize) — attach ONLY to candidates
-const attrObserver = new MutationObserver((records) => {
-    const changed = new Set();
-    for (const r of records) {
-        if (r.type === "attributes" && r.target && r.target.nodeType === 1) {
-            changed.add(r.target);
-        }
+// One ResizeObserver for all watched elements
+const resizeObserver = new ResizeObserver((entries) => {
+    const changed = [];
+    for (const e of entries) {
+        if (e && e.target) changed.push(e.target);
     }
-    if (changed.size) fixRounds(changed);
+    if (changed.length) fixRounds(changed);
 });
 
-function observeElementChanges(element) {
-    if (watchedElements.has(element)) {
-        return;
-    }
-    attrObserver.observe(element, { attributes: true, attributeFilter: ['style', 'class', 'src'] });
+function observeElementVisibility(element) {
+    if (watchedElements.has(element)) return;
+    watchedElements.add(element);
+    try {
+        resizeObserver.observe(element);
+    } catch (_) { }
 }
-
 function observeDocumentChanges(docToObserve) {
     if (watchedElements.has(docToObserve)) return;
     watchedElements.add(docToObserve);
@@ -184,4 +182,4 @@ function observeDocumentChanges(docToObserve) {
     });
 }
 
-observeDocumentChanges(document.body);
+observeDocumentChanges(document);
