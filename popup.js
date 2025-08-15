@@ -1,24 +1,10 @@
 document.addEventListener('DOMContentLoaded', function () {
   // Custom dropdown logic
   const dropdown = document.getElementById('customDropdown');
-  const selected = document.getElementById('dropdownSelected');
   const list = document.getElementById('dropdownList');
-  const options = list.querySelectorAll('.custom-dropdown-option');
   const modeInput = document.getElementById('mode');
 
-  selected.addEventListener('click', () => {
-    list.classList.toggle('show');
-  });
 
-  options.forEach(option => {
-    option.addEventListener('click', () => {
-      selected.textContent = option.textContent;
-      modeInput.value = option.getAttribute('data-value');
-      list.classList.remove('show');
-      // Trigger change event for compatibility with popup.js
-      modeInput.dispatchEvent(new Event('change', { bubbles: true }));
-    });
-  });
 
   document.addEventListener('mousedown', (e) => {
     if (!dropdown.contains(e.target)) {
@@ -35,7 +21,8 @@ document.addEventListener('DOMContentLoaded', function () {
     maxRounding: 0,
     editAll: false,
     excludeClasses: [],
-    excludeIds: []
+    excludeIds: [],
+    domMode: false
   };
 
   // Cross-browser storage API
@@ -46,8 +33,25 @@ document.addEventListener('DOMContentLoaded', function () {
       console.log("settings loaded");
       userSettings = data;
     }
+    //do makeinputs first
     makeInputs(userSettings.mode, userSettings);
+    //setup dropdown
+    const selected = document.getElementById('dropdownSelected');
+    const options = list.querySelectorAll('.custom-dropdown-option');
 
+    selected.addEventListener('click', () => {
+      list.classList.toggle('show');
+    });
+
+    options.forEach(option => {
+      option.addEventListener('click', () => {
+        selected.textContent = option.textContent;
+        modeInput.value = option.getAttribute('data-value');
+        list.classList.remove('show');
+        // Trigger change event for compatibility with popup.js
+        modeInput.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    });
     // Set custom dropdown to correct value on load
     const modeValue = userSettings.mode || "1";
     document.getElementById('mode').value = modeValue;
@@ -83,21 +87,30 @@ document.addEventListener('DOMContentLoaded', function () {
     storage.sync.set(userSettings).then(() => {
       //notify user of success
       document.getElementById('saveStatus').style.display = 'inline';
-        setTimeout(() => {
-          document.getElementById('saveStatus').style.display = 'none';
-        }, 1200);
+      setTimeout(() => {
+        document.getElementById('saveStatus').style.display = 'none';
+      }, 1200);
     });
   });
 
 
   document.getElementById('mode').addEventListener('change', (event) => {
     const mode = event.target.value;
-    makeInputs(mode);
+    makeInputs(mode, userSettings);
   });
 
-  function makeInputs(mode) {
+  function makeInputs(mode, userSettings) {
+    if (userSettings.domMode) {
+      document.querySelector('.checkbox-row').style.display = 'block';
+      if (!document.getElementById('minMax')) {
+        document.getElementById('dropdownList').innerHTML += `
+          <div class="custom-dropdown-option" id="minMax" data-value="3">by applying a min and max to the existing rounding</div>
+        `;
+      }
+    }
+    document.getElementById('editAll').checked = userSettings.editAll;
+
     document.getElementById('mode').value = mode; // Set the mode in the dropdown
-    document.getElementById('editAll').checked = userSettings.editAll; // Set the editAll checkbox state
     var inputs = document.getElementById('inputs');
     inputs.innerHTML = ""; // Clear previous inputs
     //round all corners the same amount
@@ -158,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function () {
       // Max
       const maxLabel = document.createElement('label');
       maxLabel.htmlFor = 'maxRounding';
-      maxLabel.textContent = 'Max rounding (0 to disable):';
+      maxLabel.textContent = 'Max rounding in px (0 to disable):';
       maxLabel.className = 'input-label';
       const max = document.createElement('input');
       max.type = 'number';
@@ -167,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function () {
       // Min
       const minLabel = document.createElement('label');
       minLabel.htmlFor = 'minRounding';
-      minLabel.textContent = 'Min rounding (0 to disable):';
+      minLabel.textContent = 'Min rounding in px (0 to disable):';
       minLabel.className = 'input-label';
       const min = document.createElement('input');
       min.type = 'number';

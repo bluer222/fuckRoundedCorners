@@ -6,7 +6,8 @@ var userSettings = {
     maxRounding: 0,
     editAll: false,
     excludeClasses: [],
-    excludeIds: []
+    excludeIds: [],
+    domMode: false
 };
 
 // Cross-browser storage API
@@ -22,16 +23,20 @@ let pendingReload = false;
 // Load settings & initial pass
 storage.sync.get(null).then((data) => {
     if (data != null) userSettings = data;
-    // Initial sweep
-    fixRounds(document.querySelectorAll('*'));
+    if (userSettings.domMode) {
+        //start main observer
+        observeDocumentChanges(document);
+        // Initial sweep
+        fixRounds(document.querySelectorAll('*'));
+    }
 });
 
 // Reload on settings change
-(ifStorageOnChanged => {
-    if (ifStorageOnChanged) {
-        ifStorageOnChanged.addListener(() => pendingReload = true);
+storage.onChanged.addListener(() => {
+    if (userSettings.domMode) {
+        pendingReload = true;
     }
-})((storage && storage.onChanged) ? storage.onChanged : (chrome.storage && chrome.storage.onChanged));
+});
 
 //just got focused, check if we need to reload
 window.addEventListener('focus', () => {
@@ -182,4 +187,3 @@ function observeDocumentChanges(docToObserve) {
     });
 }
 
-observeDocumentChanges(document);

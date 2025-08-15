@@ -1,29 +1,43 @@
 {
-    "manifest_version": 3,
-    "name": "Fuck Rounded Corners",
-    "version": "3",
-    "description": "Changes the roundness of all corners based on user preferance",
-     "action": {
-      "default_popup": "popup.html"
-    },
-    "permissions": ["storage"],
-    "options_ui": {
-      "page": "options.html",
-      "open_in_tab": true
-    },
-    "content_scripts": [
-      {
-        "matches": ["<all_urls>"],
-        "js": ["content.js"]
-      }
-    ],
-    "icons": {
-      "128": "icon.png"
-    },
-    "browser_specific_settings": {
-      "gecko": {
-        "id": "fuckroundedcorners@example.com",
-        "strict_min_version": "109.0"
-      }
+  "manifest_version": 3,
+  "name": "Fuck Rounded Corners",
+  "version": "3",
+  "description": "Changes the roundness of all corners based on user preferance",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": [
+    "scripting",
+    "tabs",
+    "storage"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ]
+    }
+  ],
+  "icons": {
+    "128": "icon.png"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "fuckroundedcorners@example.com",
+      "strict_min_version": "109.0"
     }
   }
+}
