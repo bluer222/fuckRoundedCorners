@@ -176,7 +176,10 @@ runtime.onStartup.addListener(() => {
 function load() {
     // Load settings
     storage.sync.get(null).then((data) => {
-        if (data != null) userSettings = data;
+        if (data.mode) {
+            userSettings = data;
+        }
+        console.log("Settings loaded:", userSettings);
         //create stylesheet
         css = createStyleSheet(userSettings);
         // Run the function to fix rounded corners

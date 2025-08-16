@@ -27,9 +27,12 @@ document.addEventListener('DOMContentLoaded', function () {
   const storage = (typeof browser !== "undefined" && browser.storage) ? browser.storage : chrome.storage;
 
   storage.sync.get(null).then((data) => {
-    if (data != null) {
+    if (data.mode) {
       console.log("settings loaded");
       userSettings = data;
+    } else {
+      console.log("Setting default options");
+      storage.sync.set(userSettings);
     }
     //do makeinputs first
     makeInputs(userSettings.mode, userSettings);

@@ -4,7 +4,7 @@ if (!storage) {
 }
 // Load settings & initial pass
 storage.sync.get(null).then((data) => {
-    if (data != null) userSettings = data;
+    if (data.mode) userSettings = data;
     //the CSS to inject
     var css = createCss();
 

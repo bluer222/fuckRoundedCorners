@@ -28,14 +28,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function saveOptions() {
     storage.sync.get(null).then((data) => {
-      data.excludeClasses = excludeClasses;
-      data.excludeIds = excludeIds;
-      storage.sync.set(data).then(() => {
-        document.getElementById('saveStatus').style.display = 'inline';
-        setTimeout(() => {
-          document.getElementById('saveStatus').style.display = 'none';
-        }, 1200);
-      });
+      if (data.mode) {
+        data.excludeClasses = excludeClasses;
+        data.excludeIds = excludeIds;
+        storage.sync.set(data).then(() => {
+          document.getElementById('saveStatus').style.display = 'inline';
+          setTimeout(() => {
+            document.getElementById('saveStatus').style.display = 'none';
+          }, 1200);
+        });
+      } else {
+        console.log("Setting default options");
+        storage.sync.set({
+          mode: "1",
+          roundAmount: 0,
+          ratioAmount: 0,
+          minRounding: 0,
+          maxRounding: 0,
+          excludeClasses: [],
+          excludeIds: [],
+        });
+      }
     });
   }
 
