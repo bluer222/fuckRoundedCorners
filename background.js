@@ -124,17 +124,16 @@ async function removeFromAllTabs(css) {
     }
 }
 
-// Listen for new tabs
-tabsapi.onCreated.addListener((tab) => {
-    console.log('New tab created:', tab.id);
-    // Note: Can't inject immediately as page might not be loaded yet
-});
 
 // Listen for tab updates (when page loads/navigates)
 tabsapi.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     // Inject CSS when the page has finished loading
     if (changeInfo.status === 'loading' && tab.url) {
         if (!userSettings.domMode) {
+            //sometimes the css variable gets reset, so we need to set it
+            if (!css) {
+                css = createStyleSheet(userSettings);
+            }
             await injectCSSIntoTab(tab, css);
         }
 
