@@ -139,9 +139,12 @@ storage.sync.get(null).then((data) => {
                                 fixRounds(shadowElements);
                             }
                         }
-                        //if the node matches any of the selectors we found earlier
-                        if (node.matches(selectors.join(', '))) {
-                            newElements.push(node);
+                        //if we have selectors cached, check if the node matches any of them
+                        if (selectors.length !== 0) {
+                            //if the node matches any of the selectors we found earlier
+                            if (node.matches(selectors.join(', '))) {
+                                newElements.push(node);
+                            }
                         }
                     }
                 });
@@ -247,7 +250,7 @@ storage.sync.get(null).then((data) => {
     // Observe the document for new shadow roots and elements with important border-radius
     observeDocumentChanges();
     // Find elements with important border-radius and shadow roots
-    var elements = fintotalindElementsWithImportantBorderRadius();
+    var elements = findElementsWithImportantBorderRadius();
     elements = elements.concat(findElementsWithShadowRoots());
     // Initial sweep
     fixRounds(elements);
