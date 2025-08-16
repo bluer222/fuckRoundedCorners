@@ -6,7 +6,6 @@ var userSettings = {
     maxRounding: 0,
     excludeClasses: [],
     excludeIds: [],
-    domMode: false
 };
 
 // CSS to inject
@@ -66,7 +65,7 @@ function canInject(tab) {
         /^brave:\/\//       // Brave internal pages
     ];
 
-    if(tab.discarded) return false; // Don't inject into discarded/sleeping tabs
+    if (tab.discarded) return false; // Don't inject into discarded/sleeping tabs
 
     return !restrictedPatterns.some(pattern => pattern.test(url));
 }
@@ -145,23 +144,18 @@ tabsapi.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             //load settings if they got unloaded for some reason
             storage.sync.get(null).then((data) => {
                 if (data != null) userSettings = data;
-                if (!userSettings.domMode) {
-                    //create stylesheet
-                    css = createStyleSheet(userSettings);
-                    injectCSSIntoTab(tab, css);
-                } else {
-                    console.log("DOM mode is enabled, not injecting CSS");
-                }
+                //create stylesheet
+                css = createStyleSheet(userSettings);
+                injectCSSIntoTab(tab, css);
             });
             return;
         } else {
-            if (!userSettings.domMode) {
-                //sometimes the css variable gets reset, so we need to set it
-                if (!css) {
-                    css = createStyleSheet(userSettings);
-                }
-                await injectCSSIntoTab(tab, css);
+            //sometimes the css variable gets reset, so we need to set it
+            if (!css) {
+                css = createStyleSheet(userSettings);
             }
+            await injectCSSIntoTab(tab, css);
+
         }
 
     }
@@ -183,28 +177,24 @@ function load() {
     // Load settings
     storage.sync.get(null).then((data) => {
         if (data != null) userSettings = data;
-        if (!userSettings.domMode) {
-            //create stylesheet
-            css = createStyleSheet(userSettings);
-            // Run the function to fix rounded corners
-            injectIntoAllTabs(css)
-        } else {
-            console.log("DOM mode is enabled, not injecting CSS");
-        }
+        //create stylesheet
+        css = createStyleSheet(userSettings);
+        // Run the function to fix rounded corners
+        injectIntoAllTabs(css)
+
     });
 
 }
 
 // wait for changes in settings
 storage.onChanged.addListener(() => {
-    if (!userSettings.domMode) {
 
-        //remove old CSS from all tabs
-        console.log('Settings changed, removing CSS');
+    //remove old CSS from all tabs
+    console.log('Settings changed, removing CSS');
 
-        removeFromAllTabs(css).then(() => {
-            console.log('Settings changed, adding CSS');
-            load();
-        });
-    }
+    removeFromAllTabs(css).then(() => {
+        console.log('Settings changed, adding CSS');
+        load();
+    });
+
 });

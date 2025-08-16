@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   const storage = (typeof browser !== "undefined" && browser.storage) ? browser.storage : chrome.storage;
 
   const excludeClassInput = document.getElementById('excludeClassInput');
@@ -8,11 +8,9 @@ document.addEventListener('DOMContentLoaded', function() {
   const excludeIdInput = document.getElementById('excludeIdInput');
   const addIdBtn = document.getElementById('addIdBtn');
   const excludeIdsList = document.getElementById('excludeIdsList');
-  const domModeCheckbox = document.getElementById('domMode');
 
   let excludeClasses = [];
   let excludeIds = [];
-  let domMode = false;
 
   function renderList(list, arr, removeHandler) {
     list.innerHTML = '';
@@ -32,7 +30,6 @@ document.addEventListener('DOMContentLoaded', function() {
     storage.sync.get(null).then((data) => {
       data.excludeClasses = excludeClasses;
       data.excludeIds = excludeIds;
-      data.domMode = domMode;
       storage.sync.set(data).then(() => {
         document.getElementById('saveStatus').style.display = 'inline';
         setTimeout(() => {
@@ -46,8 +43,6 @@ document.addEventListener('DOMContentLoaded', function() {
     storage.sync.get(null).then((data) => {
       excludeClasses = Array.isArray(data.excludeClasses) ? data.excludeClasses : [];
       excludeIds = Array.isArray(data.excludeIds) ? data.excludeIds : [];
-      domMode = data.domMode || false;
-      domModeCheckbox.checked = domMode;
       renderList(excludeClassesList, excludeClasses, idx => {
         excludeClasses.splice(idx, 1);
         renderList(excludeClassesList, excludeClasses, arguments.callee);
@@ -81,13 +76,6 @@ document.addEventListener('DOMContentLoaded', function() {
       });
       excludeIdInput.value = '';
     }
-  });
-
-  domModeCheckbox.addEventListener('change', () => {
-    domMode = domModeCheckbox.checked;
-    storage.sync.get(null).then((data) => {
-      data.domMode = domMode;
-    });
   });
 
   document.getElementById('saveOptions').addEventListener('click', saveOptions);

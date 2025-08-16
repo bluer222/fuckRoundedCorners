@@ -21,7 +21,6 @@ document.addEventListener('DOMContentLoaded', function () {
     maxRounding: 0,
     excludeClasses: [],
     excludeIds: [],
-    domMode: false
   };
 
   // Cross-browser storage API
