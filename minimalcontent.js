@@ -131,13 +131,10 @@ storage.sync.get(null).then((data) => {
                     // Only process element nodes (nodeType 1), skip text nodes, comments, etc.
                     if (node.nodeType === 1) {
                         if (node.shadowRoot) {
-                            //create an observer for the shadow root
-                            if (observeDOMChanges(node.shadowRoot)) {
-                                //if the element has a shadow root, then get all elements in the shadow root
-                                const shadowElements = node.shadowRoot.querySelectorAll('*');
-                                //call the function on all elements in the shadow root
-                                fixRounds(shadowElements);
-                            }
+                            //if the element has a shadow root add it
+                            // fixrounds will deal with creating the observer
+                            newElements.push(node);
+
                         }
                         //if we have selectors cached, check if the node matches any of them
                         if (selectors.length !== 0) {

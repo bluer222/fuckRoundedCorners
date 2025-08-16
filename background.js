@@ -16,10 +16,12 @@ function createStyleSheet(settings) {
     //add a # to the start of each id name
     var excludeIds = settings.excludeIds.map(i => '#' + i).join(', ');
 
-    var css = '*:not('
+    var css = '*'
+    if (excludeClasses || excludeIds) css += ':not(';
     if (excludeClasses) css += excludeClasses;
     if (excludeIds) css += excludedIds;
-    css += ') { ';
+        if (excludeClasses || excludeIds) css += ')';
+    css += '{ ';
 
     if (settings.mode === "1") {
         css += `border-radius: ${settings.roundAmount}px !important; `;
@@ -81,7 +83,7 @@ async function injectCSSIntoTab(tab, css) {
             });
             console.log(`CSS injected into tab ${tab.id}`);
         } catch (error) {
-            console.error(`Failed to inject CSS into tab ${tab.id}:`, error);
+            console.log(`Error injecting CSS into tab with url ${tab.url} and id ${tab.id}:`, error);
         }
     }
 }
@@ -97,7 +99,7 @@ async function removeFromTab(tab, css) {
             });
             console.log(`CSS removed from tab ${tab.id}`);
         } catch (error) {
-            console.error(`Failed to remove CSS from tab ${tab.id}:`, error);
+            console.log(`Error removing CSS from tab with url ${tab.url} and id ${tab.id}:`, error);
         }
     }
 }
