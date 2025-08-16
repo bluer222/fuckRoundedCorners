@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', function () {
     ratioAmount: 0,
     minRounding: 0,
     maxRounding: 0,
-    editAll: false,
     excludeClasses: [],
     excludeIds: [],
     domMode: false
@@ -71,7 +70,6 @@ document.addEventListener('DOMContentLoaded', function () {
       ratioAmount: 0,
       minRounding: 0,
       maxRounding: 0,
-      editAll: document.getElementById('editAll').checked
     };
     if (userSettings.mode === "1") {
       userSettings.roundAmount = parseFloat(document.getElementById('roundAmount').value);
@@ -100,15 +98,6 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   function makeInputs(mode, userSettings) {
-    if (userSettings.domMode) {
-      document.querySelector('.checkbox-row').style.display = 'block';
-      if (!document.getElementById('minMax')) {
-        document.getElementById('dropdownList').innerHTML += `
-          <div class="custom-dropdown-option" id="minMax" data-value="3">by applying a min and max to the existing rounding</div>
-        `;
-      }
-    }
-    document.getElementById('editAll').checked = userSettings.editAll;
 
     document.getElementById('mode').value = mode; // Set the mode in the dropdown
     var inputs = document.getElementById('inputs');
@@ -162,31 +151,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
       inputs.appendChild(ratioLabel);
       inputs.appendChild(ratioInput);
-      inputs.appendChild(maxLabel);
-      inputs.appendChild(max);
-      inputs.appendChild(minLabel);
-      inputs.appendChild(min);
-    } else if (mode === "3") {
-      //round all corners by applying a min and max to the existing rounding
-      // Max
-      const maxLabel = document.createElement('label');
-      maxLabel.htmlFor = 'maxRounding';
-      maxLabel.textContent = 'Max rounding in px (0 to disable):';
-      maxLabel.className = 'input-label';
-      const max = document.createElement('input');
-      max.type = 'number';
-      max.id = 'maxRounding';
-      max.value = userSettings.maxRounding;
-      // Min
-      const minLabel = document.createElement('label');
-      minLabel.htmlFor = 'minRounding';
-      minLabel.textContent = 'Min rounding in px (0 to disable):';
-      minLabel.className = 'input-label';
-      const min = document.createElement('input');
-      min.type = 'number';
-      min.id = 'minRounding';
-      min.value = userSettings.minRounding;
-
       inputs.appendChild(maxLabel);
       inputs.appendChild(max);
       inputs.appendChild(minLabel);

@@ -4,7 +4,6 @@ var userSettings = {
     ratioAmount: 0,
     minRounding: 0,
     maxRounding: 0,
-    editAll: false,
     excludeClasses: [],
     excludeIds: [],
     domMode: false
@@ -44,8 +43,9 @@ const runtime = (typeof browser !== "undefined" && browser.runtime) ? browser.ru
 const scripting = (typeof browser !== "undefined" && browser.scripting) ? browser.scripting : chrome.scripting;
 const tabsapi = (typeof browser !== "undefined" && browser.tabs) ? browser.tabs : chrome.tabs;
 
-function isURLRestricted(url) {
-    if (!url) return true;
+function canInject(tab) {
+    let url = tab.url || tab.pendingUrl; // Use pendingUrl for tabs that are still loading
+    if (!url) return false;
 
     const restrictedPatterns = [
         /^chrome:\/\//,           // Chrome internal pages
@@ -58,16 +58,23 @@ function isURLRestricted(url) {
         /^view-source:/,         // View source pages
         /^data:/,                // Data URLs
         /^file:\/\//,            // Local files (usually restricted)
-        /^ftp:/                  // FTP (often restricted)
+        /^ftp:/,                 // FTP (often restricted)
+        /^chrome-error:\/\//,   // Chrome error pages
+        /^edge-error:\/\//,   // Edge error pages
+        /^opera:\/\//,         // Opera internal pages
+        /^vivaldi:\/\//,      // Vivaldi internal pages
+        /^brave:\/\//       // Brave internal pages
     ];
 
-    return restrictedPatterns.some(pattern => pattern.test(url));
+    if(tab.discarded) return false; // Don't inject into discarded/sleeping tabs
+
+    return !restrictedPatterns.some(pattern => pattern.test(url));
 }
 
 // Function to inject CSS into a specific tab
 async function injectCSSIntoTab(tab, css) {
     //make sure its not a restricted URL, rememvber user can use firefox or edge as well as chrome
-    if (!isURLRestricted(tab.url)) {
+    if (canInject(tab)) {
         try {
             await scripting.insertCSS({
                 target: { tabId: tab.id },
@@ -83,7 +90,7 @@ async function injectCSSIntoTab(tab, css) {
 // Function to remove CSS from a specific tab
 async function removeFromTab(tab, css) {
     //make sure its not a restricted URL
-    if (!isURLRestricted(tab.url)) {
+    if (canInject(tab)) {
         try {
             await scripting.removeCSS({
                 target: { tabId: tab.id },
@@ -102,7 +109,10 @@ async function injectIntoAllTabs(css) {
         const tabs = await tabsapi.query({});
 
         for (const tab of tabs) {
-            await injectCSSIntoTab(tab, css);
+            // Inject CSS into each tab, ignoring errors for individual tabs
+            try {
+                await injectCSSIntoTab(tab, css);
+            } catch (e) { }
 
         }
     } catch (error) {
@@ -116,7 +126,9 @@ async function removeFromAllTabs(css) {
         const tabs = await tabsapi.query({});
 
         for (const tab of tabs) {
-            await removeFromTab(tab, css);
+            try {
+                await removeFromTab(tab, css);
+            } catch (e) { }
 
         }
     } catch (error) {
@@ -129,12 +141,27 @@ async function removeFromAllTabs(css) {
 tabsapi.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     // Inject CSS when the page has finished loading
     if (changeInfo.status === 'loading' && tab.url) {
-        if (!userSettings.domMode) {
-            //sometimes the css variable gets reset, so we need to set it
-            if (!css) {
-                css = createStyleSheet(userSettings);
+        if (!userSettings) {
+            //load settings if they got unloaded for some reason
+            storage.sync.get(null).then((data) => {
+                if (data != null) userSettings = data;
+                if (!userSettings.domMode) {
+                    //create stylesheet
+                    css = createStyleSheet(userSettings);
+                    injectCSSIntoTab(tab, css);
+                } else {
+                    console.log("DOM mode is enabled, not injecting CSS");
+                }
+            });
+            return;
+        } else {
+            if (!userSettings.domMode) {
+                //sometimes the css variable gets reset, so we need to set it
+                if (!css) {
+                    css = createStyleSheet(userSettings);
+                }
+                await injectCSSIntoTab(tab, css);
             }
-            await injectCSSIntoTab(tab, css);
         }
 
     }
